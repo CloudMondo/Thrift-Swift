@@ -27,11 +27,16 @@ public protocol TStruct: TSerializable {
     static var structName: String { get }
 }
 
+
 extension TStruct {
 
     public static var fieldIds: [String: (id: Int32, type: TType)] {
         return [:]
-    }
+	}
+
+	private static var customPropertyMapping: [String : String]  {
+		return ["customDescription" : "description"]
+	}
 
     public static var thriftType: TType {
         return .struct
@@ -64,8 +69,16 @@ extension TStruct {
 
         // Iterate through all children, ignore empty property names
         for (propertyName, propertyValue) in mirror.children {
-            guard let propertyName = propertyName,
-                  let unwrappedValue = unwrap(any: propertyValue) as? TSerializable,
+			guard var propertyName = propertyName
+				else {
+					continue
+			}
+
+			if let customProperty = Self.customPropertyMapping[propertyName] {
+				propertyName = customProperty
+			}
+
+            guard let unwrappedValue = unwrap(any: propertyValue) as? TSerializable,
                   let id = Self.fieldIds[propertyName]
             else {
                 continue
