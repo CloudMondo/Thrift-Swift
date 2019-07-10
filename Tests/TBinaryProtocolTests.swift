@@ -132,6 +132,26 @@ class TBinaryProtocolTests: XCTestCase {
         }
     }
 
+	func testStructWrite() {
+		let writeVal = OttXcCommunity(id: 124, name: "Community name", customDescription: "Long description", isActive: true)
+		do {
+			try writeVal.write(to: proto)
+			try? transport.flush()
+
+		}
+		catch let error {
+			XCTAssertFalse(true, "Caught Error attempting to write \(error)")
+		}
+
+		do {
+			let readVal = try OttXcCommunity.read(from: proto)
+			XCTAssertEqual(readVal.customDescription, writeVal.customDescription, "Description mismatch, expected \(readVal.customDescription) got \(writeVal.customDescription)")
+		}
+		catch let error {
+			XCTAssertFalse(true, "Caught Error attempting to read \(error)")
+		}
+	}
+
     static var allTests: [(String, (TBinaryProtocolTests) -> () throws -> Void)] {
         return [
             ("testInt8WriteRead", testInt8WriteRead),
@@ -142,7 +162,102 @@ class TBinaryProtocolTests: XCTestCase {
             ("testBoolWriteRead", testBoolWriteRead),
             ("testStringWriteRead", testStringWriteRead),
             ("testDataWriteRead", testDataWriteRead),
-            ("testStructWriteRead", testStructWriteRead)
+            ("testStructWriteRead", testStructWriteRead),
+			("testStructWrite", testStructWrite)
         ]
     }
+
+
+}
+
+public final class OttXcCommunity: Codable {
+
+	// MARK: - Properties
+
+	public var id: Int64?
+	public var name: String?
+	public var customDescription: String?
+	public var isActive: Bool?
+
+	// MARK: - Initializers
+
+	public init() { }
+	public init(id: Int64?, name: String?, customDescription: String?, isActive: Bool?) {
+		self.id = id
+		self.name = name
+		self.customDescription = customDescription
+		self.isActive = isActive
+	}
+
+}
+
+public func ==(lhs: OttXcCommunity, rhs: OttXcCommunity) -> Bool {
+	return
+		(lhs.id == rhs.id) &&
+			(lhs.name == rhs.name) &&
+			(lhs.customDescription == rhs.customDescription) &&
+			(lhs.isActive == rhs.isActive)
+}
+
+extension OttXcCommunity: CustomStringConvertible {
+
+	public var description : String {
+		var desc = "OttXcCommunity("
+		desc += "id=\(String(describing: self.id)),"
+		desc += "name=\(String(describing: self.name)),"
+		desc += "description=\(String(describing: self.customDescription)),"
+		desc += "isActive=\(String(describing: self.isActive))"
+		desc += ")"
+		return desc
+	}
+
+}
+
+extension OttXcCommunity: Hashable {
+
+	public func hash(into hasher: inout Hasher) {
+		hasher.combine(id)
+		hasher.combine(name)
+		hasher.combine(customDescription)
+		hasher.combine(isActive)
+	}
+
+}
+
+extension OttXcCommunity: TStruct {
+
+	public static var fieldIds: [String: Int32] {
+		return ["id": 1, "name": 2, "description": 3, "isActive": 4, ]
+	}
+
+	public static var structName: String { return "OttXcCommunity" }
+
+	public static func read(from sourceProtocol: TProtocol) throws -> OttXcCommunity {
+		_ = try sourceProtocol.readStructBegin()
+		var id: Int64?
+		var name: String?
+		var customDescription: String?
+		var isActive: Bool?
+
+		fields: while true {
+
+			let (_, fieldType, fieldID) = try sourceProtocol.readFieldBegin()
+
+			switch (fieldID, fieldType) {
+			case (_, .stop):            break fields
+			case (1, .i64):             id = try Int64.read(from: sourceProtocol)
+			case (2, .string):           name = try String.read(from: sourceProtocol)
+			case (3, .string):           customDescription = try String.read(from: sourceProtocol)
+			case (4, .bool):            isActive = try Bool.read(from: sourceProtocol)
+			case let (_, unknownType):  try sourceProtocol.skip(type: unknownType)
+			}
+
+			try sourceProtocol.readFieldEnd()
+		}
+
+		try sourceProtocol.readStructEnd()
+
+		return OttXcCommunity(id: id, name: name, customDescription: customDescription, isActive: isActive)
+	}
+
 }
