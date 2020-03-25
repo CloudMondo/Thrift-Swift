@@ -31,6 +31,7 @@ public struct TSet<Element: TSerializable & Hashable & Codable>: SetAlgebra, Has
     public typealias Indices = Storage.Indices
     public typealias Index = Storage.Index
     public typealias SubSequence = Storage.SubSequence
+    public typealias Element = Storage.Element
 
     public var indices: Indices {
         return storage.indices
