@@ -26,6 +26,6 @@ let package = Package(
             name: "Thrift",
             dependencies: [],
             path: "Sources",
-            exclude: ["Info.plist"])
+            exclude: ["Info.plist"]),
     ]
 )
