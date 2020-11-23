@@ -10,6 +10,14 @@ let package = Package(
         .library(
             name: "Thrift",
             targets: ["Thrift"]),
+        .library(
+            name: "ThriftStatic",
+            type: .static,
+            targets: ["Thrift"]),
+        .library(
+            name: "ThriftDynamic",
+            type: .dynamic,
+            targets: ["Thrift"]),
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -17,6 +25,7 @@ let package = Package(
         .target(
             name: "Thrift",
             dependencies: [],
-            path: "Sources")
+            path: "Sources",
+            exclude: ["Info.plist"]),
     ]
 )
